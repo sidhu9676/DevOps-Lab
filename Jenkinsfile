@@ -1,8 +1,9 @@
 pipeline {
     agent any
 
-    tools {
-        maven 'Maven3'   // Name must match a Maven installation configured in
+   tools {
+    maven 'mavn3'
+       // Name must match a Maven installation configured in
                          // Manage Jenkins > Tools
     }
 
