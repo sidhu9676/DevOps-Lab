@@ -6,22 +6,18 @@ pipeline {
     }
 
     environment {
-        IMAGE_NAME = "devops-cicd-lab"
+        // Docker Image Details
+        IMAGE_NAME = "sidhu9676/devops-cicd-lab"
         IMAGE_TAG = "${BUILD_NUMBER}"
+
+        // Docker Container Name
         CONTAINER_NAME = "devops-cicd-lab-container"
 
+        // Docker Hub Credentials ID (Manage Jenkins -> Credentials)
         DOCKERHUB_CREDS = credentials('dockerhub-creds')
-        DOCKERHUB_REPO = "sidhu9676/devops-cicd-lab"
     }
 
     stages {
-
-        stage('Checkout') {
-            steps {
-                git branch: 'main',
-                    url: 'https://github.com/sidhu9676/DevOps-Lab.git'
-            }
-        }
 
         stage('Build with Maven') {
             steps {
@@ -55,16 +51,17 @@ pipeline {
             }
         }
 
-        stage('Push to Docker Hub') {
+        stage('Push Docker Image') {
             steps {
                 sh '''
-                echo $DOCKERHUB_CREDS_PSW | docker login -u $DOCKERHUB_CREDS_USR --password-stdin
+                    echo $DOCKERHUB_CREDS_PSW | docker login -u $DOCKERHUB_CREDS_USR --password-stdin
 
-                docker tag ${IMAGE_NAME}:${IMAGE_TAG} ${DOCKERHUB_REPO}:${IMAGE_TAG}
-                docker tag ${IMAGE_NAME}:${IMAGE_TAG} ${DOCKERHUB_REPO}:latest
+                    docker push ${IMAGE_NAME}:${IMAGE_TAG}
 
-                docker push ${DOCKERHUB_REPO}:${IMAGE_TAG}
-                docker push ${DOCKERHUB_REPO}:latest
+                    docker tag ${IMAGE_NAME}:${IMAGE_TAG} ${IMAGE_NAME}:latest
+                    docker push ${IMAGE_NAME}:latest
+
+                    docker logout
                 '''
             }
         }
@@ -72,12 +69,12 @@ pipeline {
         stage('Deploy Container') {
             steps {
                 sh '''
-                docker rm -f ${CONTAINER_NAME} || true
+                    docker rm -f ${CONTAINER_NAME} || true
 
-                docker run -d \
-                    --name ${CONTAINER_NAME} \
-                    -p 8080:8080 \
-                    ${IMAGE_NAME}:${IMAGE_TAG}
+                    docker run -d \
+                      --name ${CONTAINER_NAME} \
+                      -p 8080:8080 \
+                      ${IMAGE_NAME}:${IMAGE_TAG}
                 '''
             }
         }
@@ -85,11 +82,11 @@ pipeline {
 
     post {
         success {
-            echo 'Pipeline completed successfully.'
+            echo "Pipeline executed successfully."
         }
 
         failure {
-            echo 'Pipeline failed. Check the logs above.'
+            echo "Pipeline failed."
         }
 
         always {
