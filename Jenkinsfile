@@ -7,22 +7,24 @@ pipeline {
                          // Manage Jenkins > Tools
     }
 
-    environment {
-        IMAGE_NAME = "devops-cicd-lab"
-        IMAGE_TAG  = "${env.BUILD_NUMBER}"
-        CONTAINER_NAME = "devops-cicd-lab-container"
-        DOCKERHUB_CREDS = credentials('dockerhub-creds') // configured in Jenkins credentials store
-        DOCKERHUB_REPO  = "https://github.com/sidhu9676/DevOps-Lab.git"
-    }
+   environment {
+    IMAGE_NAME = "devops-cicd-lab"
+    IMAGE_TAG = "${BUILD_NUMBER}"
+    CONTAINER_NAME = "devops-cicd-lab-container"
+
+    DOCKERHUB_CREDS = credentials('dockerhub-creds')
+
+    DOCKERHUB_REPO = "sidhu9676/devops-cicd-lab"
+}
 
     stages {
 
         stage('Checkout') {
-            steps {
-                git branch: 'main',
-                    url: 'https://github.com/yourusername/devops-cicd-lab.git'
-            }
-        }
+    steps {
+        git branch: 'main',
+            url: 'https://github.com/sidhu9676/DevOps-Lab.git'
+    }
+}
 
         stage('Build with Maven') {
             steps {
