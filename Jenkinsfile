@@ -1,30 +1,27 @@
 pipeline {
     agent any
 
-   tools {
-    maven 'mavn3'
-       // Name must match a Maven installation configured in
-                         // Manage Jenkins > Tools
+    tools {
+        maven 'mavn3'
     }
 
-   environment {
-    IMAGE_NAME = "devops-cicd-lab"
-    IMAGE_TAG = "${BUILD_NUMBER}"
-    CONTAINER_NAME = "devops-cicd-lab-container"
+    environment {
+        IMAGE_NAME = "devops-cicd-lab"
+        IMAGE_TAG = "${BUILD_NUMBER}"
+        CONTAINER_NAME = "devops-cicd-lab-container"
 
-    DOCKERHUB_CREDS = credentials('dockerhub-creds')
-
-    DOCKERHUB_REPO = "sidhu9676/devops-cicd-lab"
-}
+        DOCKERHUB_CREDS = credentials('dockerhub-creds')
+        DOCKERHUB_REPO = "sidhu9676/devops-cicd-lab"
+    }
 
     stages {
 
         stage('Checkout') {
-    steps {
-        git branch: 'main',
-            url: 'https://github.com/sidhu9676/DevOps-Lab.git'
-    }
-}
+            steps {
+                git branch: 'main',
+                    url: 'https://github.com/sidhu9676/DevOps-Lab.git'
+            }
+        }
 
         stage('Build with Maven') {
             steps {
@@ -45,7 +42,7 @@ pipeline {
 
         stage('Package JAR') {
             steps {
-                sh 'mvn package -DskipTests'
+                sh 'mvn clean package -DskipTests'
                 archiveArtifacts artifacts: 'target/*.jar', fingerprint: true
             }
         }
@@ -53,40 +50,48 @@ pipeline {
         stage('Build Docker Image') {
             steps {
                 script {
-                    dockerImage = docker.build("${IMAGE_NAME}:${IMAGE_TAG}")
+                    docker.build("${IMAGE_NAME}:${IMAGE_TAG}")
                 }
             }
         }
 
         stage('Push to Docker Hub') {
             steps {
-                script {
-                    sh "echo ${DOCKERHUB_CREDS_PSW} | docker login -u ${DOCKERHUB_CREDS_USR} --password-stdin"
-                    sh "docker tag ${IMAGE_NAME}:${IMAGE_TAG} ${DOCKERHUB_REPO}:${IMAGE_TAG}"
-                    sh "docker tag ${IMAGE_NAME}:${IMAGE_TAG} ${DOCKERHUB_REPO}:latest"
-                    sh "docker push ${DOCKERHUB_REPO}:${IMAGE_TAG}"
-                    sh "docker push ${DOCKERHUB_REPO}:latest"
-                }
+                sh '''
+                echo $DOCKERHUB_CREDS_PSW | docker login -u $DOCKERHUB_CREDS_USR --password-stdin
+
+                docker tag ${IMAGE_NAME}:${IMAGE_TAG} ${DOCKERHUB_REPO}:${IMAGE_TAG}
+                docker tag ${IMAGE_NAME}:${IMAGE_TAG} ${DOCKERHUB_REPO}:latest
+
+                docker push ${DOCKERHUB_REPO}:${IMAGE_TAG}
+                docker push ${DOCKERHUB_REPO}:latest
+                '''
             }
         }
 
         stage('Deploy Container') {
             steps {
-                sh """
-                    docker rm -f ${CONTAINER_NAME} || true
-                    docker run -d --name ${CONTAINER_NAME} -p 8080:8080 ${IMAGE_NAME}:${IMAGE_TAG}
-                """
+                sh '''
+                docker rm -f ${CONTAINER_NAME} || true
+
+                docker run -d \
+                    --name ${CONTAINER_NAME} \
+                    -p 8080:8080 \
+                    ${IMAGE_NAME}:${IMAGE_TAG}
+                '''
             }
         }
     }
 
     post {
         success {
-            echo 'Pipeline completed successfully. Container is running.'
+            echo 'Pipeline completed successfully.'
         }
+
         failure {
-            echo 'Pipeline failed. Check the stage logs above.'
+            echo 'Pipeline failed. Check the logs above.'
         }
+
         always {
             sh 'docker logout || true'
         }
