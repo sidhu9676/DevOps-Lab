@@ -7,13 +7,13 @@ pipeline {
 
     environment {
         // Docker Image Details
-        IMAGE_NAME = "sidhu9676/devops-cicd-lab"
+        IMAGE_NAME = "sidhu9676/devops-lab"
         IMAGE_TAG = "${BUILD_NUMBER}"
 
         // Docker Container Name
-        CONTAINER_NAME = "devops-cicd-lab-container"
+        CONTAINER_NAME = "devops-lab-container"
 
-        // Docker Hub Credentials ID (Manage Jenkins -> Credentials)
+        // Docker Hub Credentials
         DOCKERHUB_CREDS = credentials('dockerhub-creds')
     }
 
@@ -54,7 +54,7 @@ pipeline {
         stage('Push Docker Image') {
             steps {
                 sh '''
-                    echo $DOCKERHUB_CREDS_PSW | docker login -u $DOCKERHUB_CREDS_USR --password-stdin
+                    echo "$DOCKERHUB_CREDS_PSW" | docker login -u "$DOCKERHUB_CREDS_USR" --password-stdin
 
                     docker push ${IMAGE_NAME}:${IMAGE_TAG}
 
