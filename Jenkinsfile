@@ -54,10 +54,10 @@ pipeline {
         stage('Push Docker Image') {
     steps {
         script {
-           withCredentials([usernamePassword(credentialsId: '8204ae2f-29a5-467e-8427-cd49e49058ec', usernameVariable: 'sidhu9676', passwordVariable: 'Sidda@9676')]) {
+           withCredentials([usernamePassword(credentialsId: '8204ae2f-29a5-467e-8427-cd49e49058ec', usernameVariable: 'DOCKERHUB_USERNAME', passwordVariable: 'DOCKERHUB_PASSWORD')]) {
     sh '''
         echo "$DOCKERHUB_PASSWORD" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
-        # Push commands...
+        docker push sidhu9676/devops-lab:20
     '''
 }
         }
