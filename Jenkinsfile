@@ -15,9 +15,17 @@ pipeline {
 
         // Docker Hub Credentials
         DOCKERHUB_CREDS = credentials('dockerhub-creds')
+        // Replace with your actual credentials ID
+        DOCKERHUB_CREDENTIALS_ID = 'your-dockerhub-credentials-id'
     }
 
     stages {
+        stage('Checkout') {
+            steps {
+                checkout scm
+            }
+        }
+
         stage('Build with Maven') {
             steps {
                 sh 'mvn clean compile'
@@ -50,13 +58,13 @@ pipeline {
             }
         }
 
-        stage('Build and Push Docker') {
+        stage('Push Docker Image') {
             steps {
                 script {
-                    withCredentials([usernamePassword(credentialsId: '8204ae2f-29a5-467e-8427-cd49e49058ec', usernameVariable: 'DOCKERHUB_USERNAME', passwordVariable: 'DOCKERHUB_PASSWORD')]) {
+                    withCredentials([usernamePassword(credentialsId: 'your-dockerhub-credentials-id', usernameVariable: 'DOCKERHUB_USERNAME', passwordVariable: 'DOCKERHUB_PASSWORD')]) {
                         sh '''
                             echo "$DOCKERHUB_PASSWORD" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
-                            docker push sidhu9676/devops-lab:20
+                            docker push ${IMAGE_NAME}:${IMAGE_TAG}
                         '''
                     }
                 }
@@ -67,7 +75,6 @@ pipeline {
             steps {
                 sh '''
                     docker rm -f ${CONTAINER_NAME} || true
-
                     docker run -d \
                       --name ${CONTAINER_NAME} \
                       -p 8080:8080 \
@@ -87,7 +94,10 @@ pipeline {
         }
 
         always {
-            sh 'docker logout || true'
+            script {
+                // Log out from Docker to clean up credentials
+                sh 'docker logout || true'
+            }
         }
     }
 }
