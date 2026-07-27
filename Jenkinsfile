@@ -14,7 +14,7 @@ pipeline {
         CONTAINER_NAME = "devops-lab-container"
 
         // Docker Hub Credentials ID (replace with your actual ID)
-        DOCKERHUB_CREDENTIALS_ID = 'your-dockerhub-credentials-id'
+        DOCKERHUB_CREDENTIALS_ID = '8204ae2f-29a5-467e-8427-cd49e49058ec'
     }
 
     stages {
@@ -59,7 +59,7 @@ pipeline {
         stage('Push Docker Image') {
             steps {
                 script {
-                    withCredentials([usernamePassword(credentialsId: env.8204ae2f-29a5-467e-8427-cd49e49058ec, usernameVariable: 'DOCKERHUB_USERNAME', passwordVariable: 'DOCKERHUB_PASSWORD')]) {
+                    withCredentials([usernamePassword(credentialsId: 8204ae2f-29a5-467e-8427-cd49e49058ec, usernameVariable: 'DOCKERHUB_USERNAME', passwordVariable: 'DOCKERHUB_PASSWORD')]) {
                         sh '''
                             echo "$DOCKERHUB_PASSWORD" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
                             docker push ${IMAGE_NAME}:${IMAGE_TAG}
