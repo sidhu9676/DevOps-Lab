@@ -13,8 +13,8 @@ pipeline {
         // Container name
         CONTAINER_NAME = "devops-lab-container"
 
-        // Docker Hub Credentials ID (replace with your actual ID)
-        DOCKERHUB_CREDENTIALS_ID = 'your-dockerhub-credentials-id'
+        // Docker Hub Credentials ID
+        DOCKERHUB_CREDENTIALS_ID = '8204ae2f-29a5-467e-8427-cd49e49058ec'
     }
 
     stages {
