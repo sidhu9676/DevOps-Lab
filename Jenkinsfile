@@ -18,7 +18,6 @@ pipeline {
     }
 
     stages {
-
         stage('Build with Maven') {
             steps {
                 sh 'mvn clean compile'
@@ -51,25 +50,18 @@ pipeline {
             }
         }
 
-        pipeline {
-    agent any
-    stages {
         stage('Build and Push Docker') {
             steps {
                 script {
-                    node {
-                        withCredentials([usernamePassword(credentialsId: '8204ae2f-29a5-467e-8427-cd49e49058ec', usernameVariable: 'DOCKERHUB_USERNAME', passwordVariable: 'DOCKERHUB_PASSWORD')]) {
-                            sh '''
-                                echo "$DOCKERHUB_PASSWORD" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
-                                docker push sidhu9676/devops-lab:20
-                            '''
-                        }
+                    withCredentials([usernamePassword(credentialsId: '8204ae2f-29a5-467e-8427-cd49e49058ec', usernameVariable: 'DOCKERHUB_USERNAME', passwordVariable: 'DOCKERHUB_PASSWORD')]) {
+                        sh '''
+                            echo "$DOCKERHUB_PASSWORD" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
+                            docker push sidhu9676/devops-lab:20
+                        '''
                     }
                 }
             }
         }
-    }
-}
 
         stage('Deploy Container') {
             steps {
