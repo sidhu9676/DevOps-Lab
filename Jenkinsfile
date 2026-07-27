@@ -10,12 +10,10 @@ pipeline {
         IMAGE_NAME = "sidhu9676/devops-lab"
         IMAGE_TAG = "${BUILD_NUMBER}"
 
-        // Docker Container Name
+        // Container name
         CONTAINER_NAME = "devops-lab-container"
 
-        // Docker Hub Credentials
-        DOCKERHUB_CREDS = credentials('dockerhub-creds')
-        // Replace with your actual credentials ID
+        // Docker Hub Credentials ID (replace with your actual ID)
         DOCKERHUB_CREDENTIALS_ID = 'your-dockerhub-credentials-id'
     }
 
@@ -61,7 +59,7 @@ pipeline {
         stage('Push Docker Image') {
             steps {
                 script {
-                    withCredentials([usernamePassword(credentialsId: 'your-dockerhub-credentials-id', usernameVariable: 'DOCKERHUB_USERNAME', passwordVariable: 'DOCKERHUB_PASSWORD')]) {
+                    withCredentials([usernamePassword(credentialsId: env.DOCKERHUB_CREDENTIALS_ID, usernameVariable: 'DOCKERHUB_USERNAME', passwordVariable: 'DOCKERHUB_PASSWORD')]) {
                         sh '''
                             echo "$DOCKERHUB_PASSWORD" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
                             docker push ${IMAGE_NAME}:${IMAGE_TAG}
@@ -75,10 +73,7 @@ pipeline {
             steps {
                 sh '''
                     docker rm -f ${CONTAINER_NAME} || true
-                    docker run -d \
-                      --name ${CONTAINER_NAME} \
-                      -p 8080:8080 \
-                      ${IMAGE_NAME}:${IMAGE_TAG}
+                    docker run -d --name ${CONTAINER_NAME} -p 8080:8080 ${IMAGE_NAME}:${IMAGE_TAG}
                 '''
             }
         }
@@ -88,15 +83,15 @@ pipeline {
         success {
             echo "Pipeline executed successfully."
         }
-
         failure {
             echo "Pipeline failed."
         }
-
         always {
             script {
-                // Log out from Docker to clean up credentials
-                sh 'docker logout || true'
+                // Wrap the sh command in node to avoid context issues
+                node {
+                    sh 'docker logout || true'
+                }
             }
         }
     }
