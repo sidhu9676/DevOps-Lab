@@ -6,26 +6,19 @@ pipeline {
     }
 
     environment {
-<<<<<<< HEAD
         // Docker Image Details
         IMAGE_NAME = "sidhu9676/devops-lab"
         IMAGE_TAG = "${BUILD_NUMBER}"
 
-        // Container name
+        // Container Details
         CONTAINER_NAME = "devops-lab-container"
 
-        // Docker Hub Credentials ID (replace with your actual ID)
-        DOCKERHUB_CREDENTIALS_ID = '8204ae2f-29a5-467e-8427-cd49e49058ec'
-=======
-        IMAGE_NAME = "devops-cicd-lab"
-        IMAGE_TAG  = "${env.BUILD_NUMBER}"
-        CONTAINER_NAME = "devops-cicd-lab-container"
-        DOCKERHUB_CREDS = 'dockerhub-creds' // configured in Jenkins credentials store
-        DOCKERHUB_REPO  = "yourdockerhubusername/devops-cicd-lab"
->>>>>>> ba92d0f (changes jenkinsfile)
+        // Jenkins Docker Hub Credential ID
+        DOCKERHUB_CREDS = "dockerhub-creds"
     }
 
     stages {
+
         stage('Checkout') {
             steps {
                 checkout scm
@@ -67,12 +60,17 @@ pipeline {
         stage('Push Docker Image') {
             steps {
                 script {
-                    withCredentials([usernamePassword(credentialsId: '8204ae2f-29a5-467e-8427-cd49e49058ec', usernameVariable: 'DOCKERHUB_USERNAME', passwordVariable: 'DOCKERHUB_PASSWORD')]) {
-    sh '''
-        echo "$DOCKERHUB_PASSWORD" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
-        docker push ${IMAGE_NAME}:${IMAGE_TAG}
-    '''
-}
+                    withCredentials([usernamePassword(
+                        credentialsId: "${DOCKERHUB_CREDS}",
+                        usernameVariable: 'DOCKERHUB_USERNAME',
+                        passwordVariable: 'DOCKERHUB_PASSWORD'
+                    )]) {
+
+                        sh '''
+                            echo "$DOCKERHUB_PASSWORD" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
+                            docker push ${IMAGE_NAME}:${IMAGE_TAG}
+                        '''
+                    }
                 }
             }
         }
@@ -89,18 +87,15 @@ pipeline {
 
     post {
         success {
-            echo "Pipeline executed successfully."
+            echo 'Pipeline executed successfully.'
         }
+
         failure {
-            echo "Pipeline failed."
+            echo 'Pipeline failed.'
         }
+
         always {
-            script {
-                // Wrap the sh command in node to avoid context issues
-                node {
-                    sh 'docker logout || true'
-                }
-            }
+            sh 'docker logout || true'
         }
     }
 }
