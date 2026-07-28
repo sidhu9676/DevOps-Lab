@@ -13,7 +13,11 @@ FROM eclipse-temurin:17-jre
 
 WORKDIR /app
 
+<<<<<<< HEAD
 COPY --from=build /app/target/*.jar app.jar
+=======
+COPY --from=build /app/target/DevOps-Lab-1.0-SNAPSHOT.jar app.jar
+>>>>>>> ba92d0f (changes jenkinsfile)
 
 EXPOSE 8080
 
